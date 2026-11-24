@@ -1,0 +1,17 @@
+{
+  "name": "Laboratório das Poções",
+  "short_name": "Poções",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1d1631",
+  "theme_color": "#1d1631",
+  "icons": [
+    {
+      "src": "assets/capa.webp",
+      "sizes": "any",
+      "type": "image/webp",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laboratório das Poções · Professor v0.8.3</title><style>
+:root{color-scheme:dark}*{box-sizing:border-box}body{margin:0;background:#191426;color:#f8f1e6;font:16px/1.5 system-ui,Segoe UI,sans-serif}header,nav,main{padding:16px max(20px,calc((100vw - 1160px)/2))}header{background:#21192e}h1{margin:0;font-size:1.6rem}h2{margin:0 0 14px}nav{display:flex;gap:8px;flex-wrap:wrap;background:#2b213b;position:sticky;top:0;z-index:2}button,select,input,textarea{font:inherit;border-radius:9px;padding:10px;background:#3c304d;color:#fff;border:1px solid #82708c}button{cursor:pointer}button[aria-selected=true],button.primary{background:#f1c67c;color:#23172c;font-weight:bold}button:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #84e0d1}section[hidden]{display:none}.card{background:#2d233d;border:1px solid #594968;border-radius:14px;padding:18px;margin:0 0 16px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.metric{display:block;font-size:2rem;font-weight:750;color:#f1c67c}.muted{color:#d4c7dd}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:16px}label{display:grid;gap:4px}textarea{width:100%;min-height:110px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #62506d;vertical-align:top}th{color:#f1c67c}.bar{display:flex;align-items:center;gap:10px;margin:12px 0}.bar>span:first-child{min-width:105px}.track{flex:1;height:19px;background:#4b3c5d;border-radius:5px;overflow:hidden}.fill{height:100%;background:#7edaca}.bar>span:last-child{min-width:125px;text-align:right}.question{background:#4a3954;border-left:4px solid #f1c67c;border-radius:5px;padding:18px;font-size:1.25rem}.notice{padding:13px;background:#46334b;border-left:3px solid #f1c67c;margin:16px 0}a{color:#f1c67c}.status{color:#8de5cf}.spark{width:100%;height:200px;background:#21192f;border-radius:8px}.spark line{stroke:#756782}.spark polyline{fill:none;stroke:#8de5cf;stroke-width:3}.spark .ref{stroke:#f1c67c;stroke-dasharray:6 5;stroke-width:2}.projector h2{font-size:2.7rem}.projector .question{font-size:2rem}.projector .metric{font-size:3rem}.projector .card{padding:26px}@media print{nav,header,.no-print{display:none}body{background:white;color:black}.card{background:white;color:black;border:1px solid #aaa}th{color:black}}
+
+.evidence-layout{display:grid;grid-template-columns:1fr;gap:14px}
+.diagnostic{background:#342a47;border-left:4px solid #85d7ca;padding:14px;margin:12px 0;border-radius:8px}
+.diagnostic.unknown{border-color:#f1c67c}
+.diagnostic strong{display:block;margin-bottom:4px}
+.smallnote{font-size:.91rem;color:#ddd2e5}
+.evidence-tag{border:1px solid #6e607e;border-radius:6px;display:inline-block;padding:2px 7px;font-size:.82rem;white-space:nowrap}
+.evidence-tag.certo{border-color:#7ddcca;color:#94ebdb}
+.evidence-tag.incorreto{border-color:#f1a5b0;color:#fbc5c9}
+.evidence-tag.nao_verificavel{border-color:#d4bc89;color:#f3ddb2}
+.evidence-detail{background:#21192f;border-radius:10px;padding:16px;margin:12px 0}
+.evidence-tools{display:flex;align-items:end;flex-wrap:wrap;gap:12px}
+.evidence-tools label{min-width:200px}
+#individual-main[hidden], #evidence-details[hidden]{display:none}
+#history-table button{padding:5px 10px}
+#history-table tr.active td{background:#514164}
+code{font-family:ui-monospace,Consolas,monospace;color:#95e3ce}
+@media(max-width:720px){td,th{padding:7px 5px;font-size:.89rem}.evidence-tools label{width:100%}}
+@media print{.evidence-tools button,#history-table button,.no-print{display:none}#ped{display:block!important}}
+</style></head><body><header><h1>⚗️ Laboratório das Poções · Painel do Professor</h1><div class="muted">Sala __ROOM__ · v0.8.4</div></header><nav role="tablist"><button role="tab" data-tab="desc" aria-selected="true">Descobertas da Turma</button><button role="tab" data-tab="stat" aria-selected="false">Laboratório Estatístico</button><button role="tab" data-tab="ped" aria-selected="false">Avaliação e Diagnóstico</button></nav><main><div class="toolbar no-print"><span class="status" id="status" role="status">Carregando...</span><button id="refresh">Atualizar</button><button id="export">Exportar JSON</button><button id="print">Imprimir / PDF</button></div>
+<section id="desc"><div class="toolbar no-print"><label>Missão<select id="dmission"></select></label><button id="project">Modo projeção</button></div><h2>O que descobrimos com as poções?</h2><div id="dmetrics" class="grid"></div><div class="card"><h3 id="dtitle"></h3><div id="dchart"></div><p class="muted" id="dcontext"></p></div><div class="card"><h3>Questão para discussão</h3><div id="dquestion" class="question"></div><p id="dinsight"></p></div><div class="card no-print"><h3>Acesso à sala</h3><img src="/api/qr?chave=__TOKEN__" width="150" alt="QR Code da turma" style="background:white;padding:8px"><p><a href="__URL__">__URL__</a></p></div></section>
+<section id="stat" hidden><h2>Laboratório Estatístico</h2><div class="toolbar"><label>Missão<select id="smission"></select></label><label>Estratégia<select id="sstrategy"><option value="all">Todas (separadas)</option></select></label><label>Registros<select id="sunit"><option value="all">Todas as tentativas</option><option value="last">Última por estudante</option></select></label></div><div class="grid" id="smetrics"></div><div class="card"><h3>Frequência relativa acumulada</h3><svg id="curve" class="spark" viewBox="0 0 800 190" role="img" aria-label="Frequência acumulada"></svg><p class="muted" id="curveinfo"></p></div><div class="card"><h3>Comparação por condições experimentais</h3><div class="tablewrap"><table><thead><tr><th>Recipiente / estratégia</th><th>Tentativas</th><th>Observações</th><th>Sucessos</th><th>Frequência</th><th>IC Wilson 95%</th><th>Probabilidade teórica</th></tr></thead><tbody id="stable"></tbody></table></div></div><div class="notice">Intervalos de confiança pressupõem observações binomiais comparáveis. Repetições por estudante e seleção de estratégias limitam a interpretação inferencial. Não se deve combinar probabilidades teóricas diferentes em uma frequência única.</div></section>
+<section id="ped" hidden><h2>Avaliação e Diagnóstico Pedagógico</h2><div id="pmetrics" class="grid"></div><div class="card" id="individual"><h3>Ficha individual de aprendizagem</h3>
+<p class="muted">Consulte os registros efetivos de cada missão. As respostas são comparadas com os critérios usados pelo jogo na v0.8.3; registros ausentes ou incompatíveis permanecem sinalizados.</p>
+<div class="evidence-tools"><label>Estudante<select id="pstudent" aria-label="Selecionar estudante para a ficha individual"></select></label>
+<button id="download-individual" type="button" disabled>Exportar ficha JSON</button>
+<button id="download-csv" type="button" disabled>Exportar correções CSV</button></div>
+<p class="smallnote" id="individual-status" role="status">Selecione um estudante para consultar suas respostas.</p>
+<div id="individual-main" hidden>
+<div id="individual-metrics" class="grid"></div>
+<h4>Missões — última tentativa registrada</h4>
+<div class="tablewrap"><table><thead><tr><th>Missão</th><th>Tentativas</th><th>Última nota</th><th>Acertos verificáveis</th><th>Erros verificáveis</th><th>Indiretos / ausentes</th><th>Correção</th></tr></thead><tbody id="mission-evidence"></tbody></table></div>
+<h4>Histórico completo de tentativas</h4><div class="tablewrap"><table><thead><tr><th>Missão</th><th>Data</th><th>Pontos</th><th>Conferência</th><th>Detalhamento</th></tr></thead><tbody id="history-table"></tbody></table></div>
+<div id="evidence-details" class="evidence-detail" hidden aria-live="polite"></div>
+<h4>Pistas pedagógicas baseadas nas respostas</h4><p class="smallnote">As sugestões consideram a tentativa mais recente de cada missão e devem ser discutidas com o estudante. Não representam um diagnóstico conclusivo.</p>
+<div id="individual-findings"></div>
+</div></div><div class="card"><h3>Matriz de evidências</h3><div class="tablewrap"><table><thead><tr><th>Conceito</th><th>Missões</th><th>Evidência registrada</th><th>Pergunta para retomada</th></tr></thead><tbody id="concepts"></tbody></table></div></div><div class="card"><h3>Registro do professor</h3><p class="muted">O estudante escolhe ou recebe um pseudônimo ao entrar na sala. Identificadores iguais são diferenciados por um código curto. Você também pode ajustar o apelido aqui.</p><div class="toolbar"><button type="button" id="aliasbtn" title="Associar um apelido ao identificador selecionado">Associar apelido</button><label>Conceito<select id="pconcept"></select></label><label>Observação<select id="plevel"><option value="nao_avaliado">Não avaliado</option><option value="observacao">Requer observação</option><option value="em_desenvolvimento">Em desenvolvimento</option><option value="evidencia">Evidência de compreensão</option></select></label></div><label>Comentário<textarea id="pnote" maxlength="2000"></textarea></label><p><button id="save" class="primary">Salvar registro</button> <span id="savestatus" role="status"></span></p><div class="tablewrap"><table><thead><tr><th>Estudante</th><th>Conceito</th><th>Registro</th><th>Comentário</th></tr></thead><tbody id="notes"></tbody></table></div></div><div class="card"><h3>Participação por missão</h3><div class="tablewrap"><table><thead><tr><th>Missão</th><th>Estudantes</th><th>Tentativas</th><th>Pontuação média</th></tr></thead><tbody id="ptable"></tbody></table></div><p class="muted">Os registros oferecem indícios para acompanhamento; pontuações isoladas não estabelecem proficiência nem diagnóstico definitivo.</p></div></section></main>
+<script>
+'use strict';const TOKEN='__TOKEN__';let data={records:[],notes:[]};const $=id=>document.getElementById(id),names=['A Poção Rubra','Duas Gotas de Poder','O Ingrediente Desaparecido','A Receita Mais Segura','O Recipiente Misterioso','O Mestre Alquimista'],questions=['A frequência observada precisa ser igual à probabilidade teórica?','Por que a reposição mantém a chance da segunda retirada?','O que muda quando o ingrediente não retorna ao recipiente?','Qual estratégia oferece maior probabilidade e por quê?','O que muda entre amostras de 10, 30 e 100 retiradas?','Como justificar duas escolhas sob um orçamento limitado?'];const concepts=[['Probabilidade simples','1','Previsão e retiradas','Qual a diferença entre chance e resultado?'],['Independência','2','Escolha com reposição','A primeira retirada altera a segunda?'],['Dependência','3','Escolha sem reposição','Como o recipiente muda?'],['Estratégias','4 e 6','Escolhas e planos','A maior proporção sempre vence?'],['Frequência relativa','1 a 5','Históricos experimentais','Por que frequência e probabilidade diferem?'],['Variabilidade amostral','5','Estimativas sucessivas','Amostra maior garante valor exato?']];const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));function studentName(id){const label=data.aliases?.[id]||id,code=data.codes?.[id]||String(id).slice(0,6);return label.endsWith('-'+code)?label:label+' · '+code;}const fmt=n=>Number.isFinite(n)?n.toLocaleString('pt-BR',{maximumFractionDigits:1,minimumFractionDigits:1}):'—';const pct=n=>Number.isFinite(n)?fmt(n*100)+'%':'—';function metric(label,val){return `<div class="card"><strong class="metric">${esc(val)}</strong>${esc(label)}</div>`}function bars(items){let max=Math.max(1,...items.map(x=>x.n));return items.map(x=>`<div class="bar"><span>${esc(x.label)}</span><div class="track"><div class="fill" style="width:${100*x.n/max}%"></div></div><span>${esc(x.value)}</span></div>`).join('')}
+function records(m){let r=data.records.filter(x=>x.mission===m);if($('sunit').value==='last'){let map=new Map();for(let x of r){let p=map.get(x.student);if(!p||x.received>p.received||x.received===p.received&&x.id>p.id)map.set(x.student,x)}return [...map.values()]}return r}
+function strategy(r){let d=r.details||{};return r.mission<=3?d.jar:r.mission===4?d.strategy:r.mission===6?JSON.stringify(d.plan??'Plano'):'Amostragem'}
+function observations(r){let d=r.details||{},h=d.history;if(r.mission===1&&Array.isArray(h))return h.filter(x=>x==='red'||x==='blue').map(x=>x==='red'?1:0);if([2,3,4].includes(r.mission)&&Array.isArray(h))return h.filter(x=>x&&Array.isArray(x.draws)&&x.draws.length===2).map(x=>+(x.draws[0]==='red'&&x.draws[1]==='red'));if(r.mission===5&&Array.isArray(d.observations)){let a=d.observations.filter(x=>Number.isInteger(x.n)&&Number.isInteger(x.red)&&x.red>=0&&x.red<=x.n).sort((a,b)=>a.n-b.n);if(a.length){let x=a.at(-1);return Array(x.red).fill(1).concat(Array(x.n-x.red).fill(0))}}return []}
+function groups(m,rs){let map=new Map();for(let r of rs){let k=String(strategy(r)||'Não informado');if(!map.has(k))map.set(k,{k,attempts:0,seq:[]});let g=map.get(k);g.attempts++;g.seq.push(...observations(r))}return [...map.values()].sort((a,b)=>a.k.localeCompare(b.k))}
+function theory(m,k){if(m===2||m===3){let v={A:[2,1],B:[5,3],C:[3,2]}[k];if(!v)return null;let [r,b]=v,n=r+b;return m===2?(r/n)**2:r*(r-1)/(n*(n-1))}if(m===4){let v={A:[2,1,false],B:[5,3,false],C:[5,3,true]}[k];if(!v)return null;let [r,b,repl]=v,n=r+b;return repl?(r/n)**2:r*(r-1)/(n*(n-1))}return null}
+function wilson(x,n){if(!n)return null;let z=1.96,p=x/n,den=1+z*z/n,mid=(p+z*z/(2*n))/den,h=z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n))/den;return [Math.max(0,mid-h),Math.min(1,mid+h)]}
+function renderDesc(){let m=+$('dmission').value,rs=data.records.filter(x=>x.mission===m),gs=groups(m,rs),n=gs.reduce((a,g)=>a+g.seq.length,0);$('dmetrics').innerHTML=metric('Estudantes com registros',new Set(rs.map(x=>x.student)).size)+metric('Tentativas registradas',rs.length)+metric('Observações experimentais',n);$('dtitle').textContent=`Missão ${m} · ${names[m-1]}`;$('dchart').innerHTML=n?bars(gs.map(g=>{let s=g.seq.reduce((a,b)=>a+b,0);return {label:g.k,n:g.seq.length?s/g.seq.length*100:0,value:pct(s/g.seq.length)+' · n='+g.seq.length}})):rs.length?bars(gs.map(g=>({label:g.k,n:g.attempts,value:g.attempts+' escolhas'}))):'<p>Aguardando registros da missão.</p>';$('dcontext').textContent=n?'Frequência de gotas vermelhas (Missões 1 e 5) ou de duas vermelhas consecutivas (Missões 2 a 4), separada por estratégia.':'Resultados sem histórico de retiradas são apresentados como escolhas.';let most=gs.filter(g=>g.k!=='Não informado').sort((a,b)=>b.attempts-a.attempts)[0];$('dquestion').textContent=most&&m>=2&&m<=4?`A estratégia ${most.k} foi escolhida em ${Math.round(100*most.attempts/rs.length)}% das tentativas. Como a reposição e a composição explicam essa escolha?`:questions[m-1];$('dinsight').textContent='Confronte as decisões com os resultados experimentais e discuta por que amostras pequenas podem produzir frequências diferentes das probabilidades calculadas.'}
+function curve(seq,ref,m){let svg=$('curve');svg.replaceChildren();if(!seq.length||m===5){$('curveinfo').textContent=m===5?'A Missão 5 registra totais acumulados, mas não a ordem individual das cores; consulte as frequências da tabela.':'Selecione uma estratégia com histórico de retiradas.';return}let ns='http://www.w3.org/2000/svg';function line(tag,attrs){let e=document.createElementNS(ns,tag);for(let [k,v] of Object.entries(attrs))e.setAttribute(k,v);svg.append(e)}for(let y of [0,.25,.5,.75,1])line('line',{x1:30,y1:170-140*y,x2:780,y2:170-140*y});if(ref!==null)line('line',{class:'ref',x1:30,y1:170-140*ref,x2:780,y2:170-140*ref});let sum=0,pts=seq.map((v,i)=>{sum+=v;return `${30+750*i/Math.max(1,seq.length-1)},${170-140*sum/(i+1)}`});line('polyline',{points:pts.join(' ')});$('curveinfo').textContent=`n=${seq.length} · frequência final ${pct(sum/seq.length)}${ref===null?'':' · probabilidade teórica '+pct(ref)}. Ordem por chegada dos registros.`}
+function renderStats(){let m=+$('smission').value,gs=groups(m,records(m)),old=$('sstrategy').value;$('sstrategy').innerHTML='<option value="all">Todas (separadas)</option>'+gs.map(g=>`<option value="${esc(g.k)}">${esc(g.k)}</option>`).join('');$('sstrategy').value=gs.some(g=>g.k===old)?old:'all';let selected=$('sstrategy').value,sel=selected==='all'?gs:gs.filter(g=>g.k===selected);$('smetrics').innerHTML=metric('Tentativas',sel.reduce((a,g)=>a+g.attempts,0))+metric('Observações',sel.reduce((a,g)=>a+g.seq.length,0))+metric('Estratégias distintas',sel.length);$('stable').innerHTML=gs.map(g=>{let n=g.seq.length,x=g.seq.reduce((a,b)=>a+b,0),w=wilson(x,n),p=theory(m,g.k);return `<tr><td>${esc(g.k)}</td><td>${g.attempts}</td><td>${n}</td><td>${x}</td><td>${n?pct(x/n):'—'}</td><td>${w?pct(w[0])+' – '+pct(w[1]):'—'}</td><td>${p===null?'—':pct(p)}</td></tr>`}).join('')||'<tr><td colspan="7">Sem registros</td></tr>';curve(sel.length===1?sel[0].seq:[],sel.length===1?theory(m,sel[0].k):null,m)}
+function loadNote(){let n=data.notes.find(x=>x.student===$('pstudent').value&&x.concept===$('pconcept').value);$('plevel').value=n?.level||'nao_avaliado';$('pnote').value=n?.note||''}
+function renderPed(){let rs=data.records,students=[...new Set([...rs.map(r=>r.student),...Object.keys(data.aliases||{})])].sort((a,b)=>studentName(a).localeCompare(studentName(b),'pt-BR')); $('pmetrics').innerHTML=metric('Identidades na sala',students.length)+metric('Tentativas recebidas',rs.length)+metric('Missões exploradas',new Set(rs.map(x=>x.mission)).size+'/6');$('concepts').innerHTML=concepts.map(c=>'<tr>'+c.map(x=>`<td>${esc(x)}</td>`).join('')+'</tr>').join('');let old=$('pstudent').value;$('pstudent').innerHTML='<option value="">Selecione</option>'+students.map(x=>`<option value="${esc(x)}">${esc(studentName(x))}</option>`).join('');if(students.includes(old))$('pstudent').value=old;$('ptable').innerHTML=names.map((n,i)=>{let a=rs.filter(x=>x.mission===i+1),mean=a.length?a.reduce((s,x)=>s+x.score,0)/a.length:null;return `<tr><td>${i+1}. ${esc(n)}</td><td>${new Set(a.map(x=>x.student)).size}</td><td>${a.length}</td><td>${mean===null?'—':fmt(mean)}</td></tr>`}).join('');$('notes').innerHTML=data.notes.map(n=>`<tr><td>${esc(studentName(n.student))}</td><td>${esc(n.concept)}</td><td>${esc(n.level.replaceAll('_',' '))}</td><td>${esc(n.note)}</td></tr>`).join('')||'<tr><td colspan="4">Sem registros pedagógicos.</td></tr>';if(!document.activeElement || !['pnote','plevel'].includes(document.activeElement.id))loadNote()}
+function renderPedMetricsOnly(){let rs=data.records,students=new Set(rs.map(r=>r.student));$('pmetrics').innerHTML=metric('Identidades na sala',new Set([...students,...Object.keys(data.aliases||{})]).size)+metric('Tentativas recebidas',rs.length)+metric('Missões exploradas',new Set(rs.map(x=>x.mission)).size+'/6')}
+window.noteDirty=false;for(const id of ['pnote','plevel'])document.getElementById(id).addEventListener('input',()=>window.noteDirty=true);
+async function refresh(){try{let r=await fetch('/api/teacher-data?chave='+encodeURIComponent(TOKEN),{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);data=await r.json();renderDesc();renderStats();if(!window.noteDirty)renderPed();else renderPedMetricsOnly();if($('pstudent').value)loadIndividual();$('status').textContent='Atualizado '+new Date().toLocaleTimeString('pt-BR')+' · '+data.records.length+' registros'}catch(e){$('status').textContent='Erro: '+e.message}}
+for(let id of ['dmission','smission'])$(id).innerHTML=names.map((n,i)=>`<option value="${i+1}">${i+1}. ${esc(n)}</option>`).join('');$('pconcept').innerHTML=concepts.map(c=>`<option value="${esc(c[0])}">${esc(c[0])}</option>`).join('');for(let b of document.querySelectorAll('[data-tab]'))b.onclick=()=>{for(let x of document.querySelectorAll('[data-tab]'))x.setAttribute('aria-selected',String(x===b));for(let t of ['desc','stat','ped'])$(t).hidden=t!==b.dataset.tab};$('dmission').onchange=renderDesc;$('smission').onchange=renderStats;$('sstrategy').onchange=renderStats;$('sunit').onchange=renderStats;$('pstudent').onchange=()=>{window.noteDirty=false;loadNote();loadIndividual()};$('pconcept').onchange=()=>{window.noteDirty=false;loadNote()};$('refresh').onclick=refresh;$('project').onclick=()=>{document.body.classList.toggle('projector');$('project').textContent=document.body.classList.contains('projector')?'Sair da projeção':'Modo projeção'};$('print').onclick=()=>print();$('export').onclick=()=>location.href='/api/export?chave='+encodeURIComponent(TOKEN);
+$('aliasbtn').onclick=async()=>{const student=$('pstudent').value;if(!student){$('savestatus').textContent='Selecione um estudante.';return}const current=data.aliases?.[student]||'';const alias=prompt('Apelido para identificar este estudante no painel (sem nome completo):',current);if(alias===null)return;if(!alias.trim()||alias.length>40){$('savestatus').textContent='Informe um apelido de 1 a 40 caracteres.';return}try{let r=await fetch('/api/student-alias?chave='+encodeURIComponent(TOKEN),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student,alias:alias.trim()})});if(!r.ok)throw Error('HTTP '+r.status);$('savestatus').textContent='Apelido associado.';window.noteDirty=false;await refresh()}catch(e){$('savestatus').textContent='Erro: '+e.message}};
+
+// v0.8.4 — análise individual, corrigida pelo motor do servidor.
+let individualReport=null;
+let activeAttemptId=null;
+let individualRequestSeq=0;
+function evidenceStatus(c){
+ if(!c) return '<span class="evidence-tag nao_verificavel">Sem dado</span>';
+ const text=c.status==='certo'?'Acerto':c.status==='incorreto'?'Erro':'Sem verificação';
+ let source=c.source==='inferido_da_nota'?' · inferido da nota':c.source==='ausente'?' · dado ausente':'';
+ return `<span class="evidence-tag ${esc(c.status)}">${esc(text+source)}</span>`;
+}
+function reportDate(x){if(!x)return '—';const d=new Date(x);return Number.isNaN(d.getTime())?esc(x):d.toLocaleString('pt-BR')}
+function reportCounts(ev){
+ const arr=(ev?.criteria||[]).filter(c=>c.code!=='participacao');
+ return {
+  ok:arr.filter(c=>c.status==='certo'&&c.source==='registro').length,
+  bad:arr.filter(c=>c.status==='incorreto'&&c.source==='registro').length,
+  other:arr.filter(c=>c.source!=='registro'||c.status==='nao_verificavel').length,
+ };
+}
+async function loadIndividual(){
+ const student=$('pstudent').value,request=++individualRequestSeq;
+ if(!student){individualReport=null;$('individual-main').hidden=true;$('individual-status').textContent='Selecione um estudante.';return}
+ $('individual-status').textContent='Carregando correção individual...';
+ try{
+  const url='/api/student-report?chave='+encodeURIComponent(TOKEN)+'&student='+encodeURIComponent(student);
+  const response=await fetch(url,{cache:'no-store'});
+  if(!response.ok)throw Error('HTTP '+response.status);
+  const report=await response.json();
+  if(request!==individualRequestSeq || $('pstudent').value!==student)return;
+  individualReport=report;
+  paintIndividual();
+ }catch(e){if(request===individualRequestSeq){$('individual-status').textContent='Falha ao obter ficha: '+e.message;$('individual-main').hidden=true}}
+}
+function paintIndividual(){
+ const r=individualReport;if(!r)return;
+ const rs=r.records||[],evs=r.evaluations||{},overview=r.summary?.missions||[];
+ const last=overview.filter(x=>x.latest_id).map(x=>rs.find(y=>y.id===x.latest_id)).filter(Boolean);
+ const c=last.map(x=>reportCounts(evs[x.id]));
+ $('individual-main').hidden=false;
+ $('download-individual').disabled=false;$('download-csv').disabled=false;
+ $('individual-status').textContent=`${r.alias} · ${rs.length} tentativa(s) · ${last.length}/6 missões com registros.`;
+ $('individual-metrics').innerHTML=
+  metric('Missões registradas',last.length+'/6')+
+  metric('Acertos verificáveis na última tentativa',c.reduce((a,x)=>a+x.ok,0))+
+  metric('Erros verificáveis na última tentativa',c.reduce((a,x)=>a+x.bad,0))+
+  metric('Critérios indiretos/ausentes',c.reduce((a,x)=>a+x.other,0));
+ $('mission-evidence').innerHTML=overview.map(item=>{
+  const chosen=item.latest_id?evs[item.latest_id]:null,n=reportCounts(chosen);
+  return `<tr><td>${item.mission}. ${esc(item.name)}</td><td>${item.attempts}</td><td>${item.latest_score??'—'}</td><td>${chosen?n.ok:'—'}</td><td>${chosen?n.bad:'—'}</td><td>${chosen?n.other:'—'}</td><td>${item.latest_id?`<button type="button" data-attempt="${esc(item.latest_id)}">Ver</button>`:'Sem registro'}</td></tr>`;
+ }).join('');
+ // The complete history never merges multiple responses into one grade.
+ const ordered=[...rs].sort((a,b)=>(b.received||0)-(a.received||0)||String(b.at).localeCompare(String(a.at))||String(b.id).localeCompare(String(a.id)));
+ $('history-table').innerHTML=ordered.map(x=>{
+   const ev=evs[x.id],valid=ev?.score_consistent;
+   const label=valid===true?'Confere':valid===false?'Divergência':'Parcial';
+   return `<tr class="${activeAttemptId===x.id?'active':''}"><td>${x.mission}. ${esc(names[x.mission-1]||'')}</td><td>${reportDate(x.at)}</td><td>${x.score}/100</td><td>${esc(label)}</td><td><button type="button" data-attempt="${esc(x.id)}">Ver respostas</button></td></tr>`;
+ }).join('')||'<tr><td colspan="5">Nenhuma tentativa registrada.</td></tr>';
+ document.querySelectorAll('[data-attempt]').forEach(b=>b.onclick=()=>{
+  activeAttemptId=b.dataset.attempt;
+  paintIndividual();
+ });
+ if(!evs[activeAttemptId]) activeAttemptId=ordered[0]?.id||null;
+ const attempt=rs.find(x=>x.id===activeAttemptId);
+ const ev=evs[activeAttemptId];
+ $('evidence-details').hidden=!attempt;
+ if(attempt&&ev){
+  const check=ev.score_consistent===true?'A nota registrada confere com os critérios disponíveis.':ev.score_consistent===false?'A nota diverge da reconstrução: revisar antes de interpretar.':'Conferência incompleta por falta de dados.';
+  $('evidence-details').innerHTML=`<h4>Missão ${attempt.mission} — correção de ${reportDate(attempt.at)}</h4>
+  <p><strong>${attempt.score}/100 pontos.</strong> ${esc(check)}</p>
+  <div class="tablewrap"><table><thead><tr><th>Critério</th><th>Resposta registrada</th><th>Esperado pela regra</th><th>Situação</th><th>Pontos</th></tr></thead><tbody>
+  ${ev.criteria.map(c=>`<tr><td><strong>${esc(c.label)}</strong><div class="smallnote">${esc(c.concept)}</div></td><td>${esc(c.answer)}</td><td>${esc(c.expected)}</td><td>${evidenceStatus(c)}</td><td>${c.points===null?'—':c.points+'/'+c.maximum}</td></tr><tr><td colspan="5" class="smallnote">${esc(c.explanation)}</td></tr>`).join('')}
+  </tbody></table></div>
+  <p class="smallnote">${esc(ev.supplementary)}</p>
+  ${(ev.warnings||[]).map(w=>`<div class="notice" role="note">${esc(w)}</div>`).join('')}`;
+ }
+ $('individual-findings').innerHTML=(r.summary?.findings||[]).map(f=>`<div class="diagnostic ${f.kind==='retomada'?'':'unknown'}"><strong>${esc(f.concept)} · ${f.kind==='retomada'?'Retomada sugerida':f.kind==='dados_insuficientes'?'Dados limitados':'Acompanhamento'}</strong><p>${esc(f.statement)}</p><p><em>${esc(f.question)}</em></p></div>`).join('')||'<p>Não foram identificados erros verificáveis na última tentativa de cada missão. Isso não dispensa discussão e justificativa oral.</p>';
+}
+function triggerDownload(name,content,mime){
+ const url=URL.createObjectURL(new Blob([content],{type:mime})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),500);
+}
+$('download-individual').onclick=()=>{
+ if(!individualReport)return;
+ triggerDownload('pocoes-ficha-'+individualReport.code+'.json',JSON.stringify(individualReport,null,2),'application/json;charset=utf-8');
+};
+$('download-csv').onclick=()=>{
+ if(!individualReport)return;
+ const r=individualReport,fields=['sala','pseudonimo','id_tentativa','missao','data','nota','criterio','resposta','esperado','status','origem','pontos','maximo','nota_confere'],lines=[fields];
+ for(const a of r.records)for(const c of r.evaluations[a.id].criteria){
+  const ev=r.evaluations[a.id];lines.push([r.room,r.alias,a.id,a.mission,a.at,a.score,c.label,c.answer,c.expected,c.status,c.source,c.points??'',c.maximum,ev.score_consistent??'']);
+ }
+ const content='\uFEFF'+lines.map(row=>row.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');
+ triggerDownload('pocoes-correcao-'+r.code+'.csv',content,'text/csv;charset=utf-8');
+};
+
+$('save').onclick=async()=>{if(!$('pstudent').value){$('savestatus').textContent='Selecione um estudante.';return}try{let r=await fetch('/api/teacher-note?chave='+encodeURIComponent(TOKEN),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({student:$('pstudent').value,concept:$('pconcept').value,level:$('plevel').value,note:$('pnote').value})});if(!r.ok)throw Error('HTTP '+r.status);$('savestatus').textContent='Salvo.';window.noteDirty=false;await refresh()}catch(e){$('savestatus').textContent='Erro: '+e.message}};refresh();setInterval(refresh,15000);
+</script></body></html>
